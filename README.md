@@ -1,17 +1,29 @@
+<p align="center">
+  <img src="Resources/AppIcon.png" width="128" alt="ColimaDeck icon">
+</p>
+
 # ColimaDeck
 
 A native macOS app for managing [Colima](https://github.com/abiosoft/colima): your Colima machines, and the Docker containers, images and volumes running inside them, all in one window instead of a stack of terminal commands.
 
-Built with SwiftUI. No Electron, no background daemon. It runs the `colima` and `docker` commands you already have installed.
+Built with SwiftUI. No Electron, no background daemon. It runs the `colima` and `docker` commands, and installs them for you if you don't have them yet.
 
 ## Features
 
 ### Machines
 - A card for each Colima machine (profile) showing its status, CPUs, memory, disk, architecture, runtime and IP address
-- Start, stop, restart, force stop and delete, with progress shown on the card
-- **New Machine** form: name, CPUs, memory, disk, runtime (Docker, containerd, Incus), Kubernetes (k3s), VM type (Apple Virtualization or QEMU), Rosetta, and a dedicated IP address
+- Start, stop, restart, force stop, force restart and delete, with progress shown on the card
+- **New Machine** and **Edit Settings** forms covering every `colima start` option: resources, architecture, custom disk image, runtime, Kubernetes version and k3s arguments, VM type (Apple Virtualization, QEMU, krunkit), Rosetta, binfmt, nested virtualization, hostname, shared folders, networking, DNS, SSH, environment variables and more. No config files to edit by hand: **Save** stores your changes, and **Save and Restart** applies them right away.
 - Open a shell inside the machine in Terminal (`colima ssh`)
-- Open the machine's `colima.yaml` to edit advanced settings
+
+### Machine details
+- Live status from `colima status --extended`, plus Colima and runtime versions
+- **Kubernetes:** start, stop, reset and delete the cluster
+- **Run a command** inside the VM and see its output
+- **SSH connection** settings (`colima ssh-config`) to copy into tools like VS Code Remote
+- **Update the container runtime** (`colima update`)
+- **nerdctl** for containerd machines: install the `nerdctl` command on your Mac
+- **AI models** (Docker runtime with the krunkit VM type): set up, list, pull, chat with and serve models
 
 ### Containers
 - Grouped by Docker Compose project, with **Start All** and **Stop All** buttons for each project
@@ -27,6 +39,13 @@ Built with SwiftUI. No Electron, no background daemon. It runs the `colima` and 
 - Pull images by name (for example `postgres:17`)
 - Remove selected items, or delete everything unused with **Clean Up** (the app asks first)
 
+### Tools
+- Colima's version and location
+- Create or edit the **template** new machines start from, in the same form as machine settings
+- **Clean up** Colima's downloaded VM images (`colima prune`)
+- Choose how much detail Colima prints in Activity (`--verbose`, `--very-verbose`)
+- Set up **tab completion** for `colima` in zsh, bash or fish
+
 ### Activity
 - The full output of every command the app has run, newest first. Failed commands open automatically so you can see why.
 
@@ -36,7 +55,7 @@ Built with SwiftUI. No Electron, no background daemon. It runs the `colima` and 
 ## Requirements
 
 - macOS 14 (Sonoma) or later
-- Colima and the Docker CLI:
+- Colima and the Docker CLI. If they're missing, ColimaDeck offers to install them with [Homebrew](https://brew.sh) the first time you open it. If you don't have Homebrew either, it opens Terminal to install that first, because Homebrew's installer asks for your password. To install them yourself instead:
 
   ```sh
   brew install colima docker
@@ -68,7 +87,7 @@ This builds a universal release version and copies `ColimaDeck.app` into `/Appli
 
 ## Using it
 
-1. Open **Machines**. If you don't have a machine yet, click **New Machine**. The first start downloads a VM image, which can take a few minutes. You can follow its progress in **Activity**.
+1. If Colima isn't installed, the setup window installs it. Then open **Machines**. If you don't have a machine yet, click **New Machine**. The first start downloads a VM image, which can take a few minutes. You can follow its progress in **Activity**.
 2. Once a machine is running, **Containers**, **Images** and **Volumes** show what's inside it.
 3. If you have more than one machine, use the machine picker in the toolbar to choose which one the Docker screens show.
 
@@ -76,17 +95,14 @@ This builds a universal release version and copies `ColimaDeck.app` into `/Appli
 
 ColimaDeck connects to each machine's Docker socket directly (`~/.colima/<name>/docker.sock`), so it **never changes your active Docker context**. That means it works fine alongside OrbStack or Docker Desktop.
 
-Colima itself is different: by default, starting a machine makes it your active context. To stop that, set this in the machine's `colima.yaml` (**⋯ → Edit Settings File** on the machine card):
-
-```yaml
-autoActivate: false
-```
+Colima itself is different: by default, starting a machine makes it your active context. To stop that, open **⋯ → Edit Settings** on the machine card and turn off **Make it the active context when it starts**.
 
 ## Troubleshooting
 
 | Problem | Fix |
 | --- | --- |
-| "Colima isn't installed" | Run `brew install colima docker`. The app looks in `/opt/homebrew/bin`, `/usr/local/bin` and the usual system folders. |
+| "Colima isn't installed" | Click **Set Up** on the Machines screen to install it. The app looks for Colima in `/opt/homebrew/bin`, `/usr/local/bin` and the usual system folders. |
+| Installing fails | Open **Activity** to see Homebrew's output. Running `brew doctor` in Terminal often explains why. |
 | A machine won't start | Open **Activity** and expand the failed entry to see Colima's full output. |
 | "Docker isn't available" | The machine uses containerd or Incus. The Docker screens need a machine running the Docker runtime. |
 | **Open Terminal** does nothing | Allow ColimaDeck to control Terminal in **System Settings → Privacy & Security → Automation**. |
@@ -99,6 +115,7 @@ swift run          # build and run from source
 swift build        # build only
 ./build-app.sh     # build the .app
 ./build-app.sh --dmg  # also package build/ColimaDeck-<version>.dmg
+swift scripts/make-icon.swift  # redraw the app icon into Resources/
 ```
 
 You can open `Package.swift` in Xcode to work on the UI with previews and the debugger.

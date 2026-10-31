@@ -16,11 +16,12 @@ struct Machine: Identifiable, Hashable, Decodable {
     var usesDocker: Bool { runtime.isEmpty || runtime.hasPrefix("docker") }
     var hasKubernetes: Bool { runtime.contains("k3s") || runtime.contains("kubernetes") }
 
-    var directory: URL {
-        let home = ProcessInfo.processInfo.environment["COLIMA_HOME"].map { URL(fileURLWithPath: $0) }
+    static var colimaHome: URL {
+        ProcessInfo.processInfo.environment["COLIMA_HOME"].map { URL(fileURLWithPath: $0) }
             ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".colima")
-        return home.appendingPathComponent(name)
     }
+
+    var directory: URL { Self.colimaHome.appendingPathComponent(name) }
 
     var dockerSocket: String { directory.appendingPathComponent("docker.sock").path }
     var configFile: URL { directory.appendingPathComponent("colima.yaml") }
@@ -39,34 +40,6 @@ struct Machine: Identifiable, Hashable, Decodable {
         disk = try c.decodeIfPresent(Int64.self, forKey: .disk) ?? 0
         runtime = try c.decodeIfPresent(String.self, forKey: .runtime) ?? ""
         address = try c.decodeIfPresent(String.self, forKey: .address) ?? ""
-    }
-}
-
-/// Settings for creating a new machine.
-struct MachineConfig {
-    var name = ""
-    var cpus = 2
-    var memoryGiB = 4
-    var diskGiB = 60
-    var runtime = "docker"
-    var vmType = "vz"
-    var kubernetes = false
-    var rosetta = true
-    var networkAddress = false
-
-    var startArguments: [String] {
-        var args = [
-            "start", name,
-            "--cpus", "\(cpus)",
-            "--memory", "\(memoryGiB)",
-            "--disk", "\(diskGiB)",
-            "--runtime", runtime,
-            "--vm-type", vmType,
-        ]
-        if kubernetes { args.append("--kubernetes") }
-        if vmType == "vz" && rosetta { args.append("--vz-rosetta") }
-        if networkAddress { args.append("--network-address") }
-        return args
     }
 }
 

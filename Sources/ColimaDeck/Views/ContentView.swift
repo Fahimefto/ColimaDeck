@@ -3,12 +3,15 @@ import SwiftUI
 struct ContentView: View {
     @Environment(AppStore.self) private var store
     @State private var selection: SidebarItem? = .machines
+    @State private var showingSetup = false
+    @State private var checkedSetup = false
 
     var body: some View {
         NavigationSplitView {
             List(selection: $selection) {
                 Section("Colima") {
                     row(.machines, badge: store.runningCount)
+                    row(.tools)
                 }
                 Section("Docker") {
                     row(.containers, badge: store.containers.filter(\.isRunning).count)
@@ -27,8 +30,16 @@ struct ContentView: View {
             case .containers: ContainersView()
             case .images: ImagesView()
             case .volumes: VolumesView()
+            case .tools: ToolsView()
             case .activity: ActivityView()
             }
+        }
+        .sheet(isPresented: $showingSetup) { SetupView() }
+        .onChange(of: store.machinesLoaded) {
+            // Offer to install missing tools once, after the first check.
+            guard store.machinesLoaded, !checkedSetup else { return }
+            checkedSetup = true
+            showingSetup = store.colimaMissing || store.dockerMissing
         }
         .alert("Something went wrong", isPresented: alertBinding) {
             Button("OK") {}
