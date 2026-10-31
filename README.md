@@ -93,3 +93,7 @@ swift build        # build only
 You can open `Package.swift` in Xcode to work on the UI with previews and the debugger.
 
 To understand how the code fits together, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Contributions are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+MIT. See [LICENSE](LICENSE).
