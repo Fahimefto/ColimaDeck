@@ -46,15 +46,25 @@ Built with SwiftUI. No Electron, no background daemon. It runs the `colima` and 
 
 ## Install
 
+### Download
+
+1. Download `ColimaDeck-<version>.dmg` from the [latest release](https://github.com/Fahimefto/ColimaDeck/releases/latest). It runs on both Apple Silicon and Intel Macs.
+2. Open the DMG and drag **ColimaDeck** into **Applications**.
+3. The app isn't notarized by Apple, so macOS blocks it the first time you open it. To allow it, open it once, then go to **System Settings → Privacy & Security**, scroll down, and click **Open Anyway**. Or run this in Terminal:
+
+   ```sh
+   xattr -dr com.apple.quarantine /Applications/ColimaDeck.app
+   ```
+
+### Build from source
+
 ```sh
 git clone https://github.com/Fahimefto/ColimaDeck.git
 cd ColimaDeck
 ./build-app.sh --install
 ```
 
-This builds a release version and copies `ColimaDeck.app` into `/Applications`. Without `--install`, the app is left at `build/ColimaDeck.app`.
-
-The app is signed locally rather than with a developer certificate. If macOS blocks it the first time, right-click the app and choose **Open**.
+This builds a universal release version and copies `ColimaDeck.app` into `/Applications`. Without `--install`, the app is left at `build/ColimaDeck.app`.
 
 ## Using it
 
@@ -88,6 +98,7 @@ autoActivate: false
 swift run          # build and run from source
 swift build        # build only
 ./build-app.sh     # build the .app
+./build-app.sh --dmg  # also package build/ColimaDeck-<version>.dmg
 ```
 
 You can open `Package.swift` in Xcode to work on the UI with previews and the debugger.

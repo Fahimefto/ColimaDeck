@@ -80,4 +80,4 @@ Logs are the exception. `logs(for:)` runs `docker logs` through `sh -c '... 2>&1
 
 ## Packaging
 
-`build-app.sh` builds a release binary with SwiftPM, wraps it in a `.app` bundle with a generated `Info.plist`, and signs it locally (`codesign --sign -`). There's no Xcode project; `Package.swift` is the only build file.
+`build-app.sh` builds a release binary for Apple Silicon and for Intel with SwiftPM, merges them with `lipo`, wraps the result in a `.app` bundle with a generated `Info.plist`, and signs it locally (`codesign --sign -`). With `--dmg` it also packages the app in a disk image with an Applications shortcut. There's no Xcode project; `Package.swift` is the only build file. The version number is set at the top of `build-app.sh`.
